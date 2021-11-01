@@ -1,0 +1,8 @@
+F:\Teaching\Sem1\ACG\Lab4\Lab4_start\Lab4\Debug\ACG_Lab4.exe
+F:\Teaching\Sem1\ACG\Lab4\Lab4_start\Lab4\Debug\ACG_Lab4.pdb
+D:\D\!ACG\Lab4\Debug\ACG_Lab4.exe
+D:\D\!ACG\Lab4\Debug\ACG_Lab4.pdb
+D:\D\!ACG\!BigHW\Debug\BigHW.exe
+D:\D\!ACG\!BigHW\Debug\BigHW.pdb
+D:\D\!ACG\!BigHW\BIG_HW_1\Debug\BigHW.exe
+D:\D\!ACG\!BigHW\BIG_HW_1\Debug\BigHW.pdb
