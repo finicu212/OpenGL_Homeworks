@@ -158,7 +158,7 @@ namespace transforms
     void setNextTransform(TRANSFORM_TYPE TransformType)
     {
         nextDesiredTransform = TransformType;
-        if (TransformType != TRANSFORM_TYPE::NoTransform)
+        if (TransformType == TRANSFORM_TYPE::NoTransform) // debug mode for printing the coords
         {
             //transformMatrix = DEFAULT_TRANSFORM_MATRIX;
             std::cout << transformMatrix[0][0] << " " << transformMatrix[0][1] << " " << transformMatrix[0][2] << " " << transformMatrix[0][3] << '\n';
@@ -180,8 +180,8 @@ namespace transforms
         float xCoord = ((float) rand() / RAND_MAX) * 2 - 1; // * 2 - 1 to allow negative vals
         srand(cos(time * INT_LEAST16_MIN) * INT_MAX / 10);
         float yCoord = ((float) rand() / RAND_MAX) * 2 - 1;
-        xCoord *= (0.8 / INITIAL_SHAPE_SCALE.x);
-        yCoord *= (0.8 / INITIAL_SHAPE_SCALE.x);
+        xCoord *= ((1.0 - transforms::bounds::maxScale) / INITIAL_SHAPE_SCALE.x);
+        yCoord *= ((1.0 - transforms::bounds::maxScale) / INITIAL_SHAPE_SCALE.x);
         std::cout << "Generated random pos: " << xCoord << ", " << yCoord << '\n';
         return glm::vec3(xCoord, yCoord, 0.f);
     }
