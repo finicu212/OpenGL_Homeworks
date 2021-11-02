@@ -160,7 +160,11 @@ namespace transforms
         nextDesiredTransform = TransformType;
         if (TransformType != TRANSFORM_TYPE::NoTransform)
         {
-            transformMatrix = DEFAULT_TRANSFORM_MATRIX;
+            //transformMatrix = DEFAULT_TRANSFORM_MATRIX;
+            std::cout << transformMatrix[0][0] << " " << transformMatrix[0][1] << " " << transformMatrix[0][2] << " " << transformMatrix[0][3] << '\n';
+            std::cout << transformMatrix[1][0] << " " << transformMatrix[1][1] << " " << transformMatrix[1][2] << " " << transformMatrix[1][3] << '\n';
+            std::cout << transformMatrix[2][0] << " " << transformMatrix[2][1] << " " << transformMatrix[2][2] << " " << transformMatrix[2][3] << '\n';
+            std::cout << transformMatrix[3][0] << " " << transformMatrix[3][1] << " " << transformMatrix[3][2] << " " << transformMatrix[3][3] << '\n';
         }
     }
 
@@ -203,8 +207,15 @@ glm::mat4 handleTransform(transforms::TRANSFORM_TYPE TransformType, glm::mat4 tr
     {
         float maxCoord = std::max(std::max(transformMatrix[0][0], transformMatrix[1][1]), transformMatrix[2][2]);
         float minCoord = std::min(std::min(transformMatrix[0][0], transformMatrix[1][1]), transformMatrix[2][2]);
-        if (maxCoord > transforms::bounds::maxScale || minCoord < transforms::bounds::minScale)
-            transforms::direction = -transforms::direction;
+        if (maxCoord > transforms::bounds::maxScale)
+        {
+            transforms::direction = -1;
+        }
+        else if (minCoord < transforms::bounds::minScale)
+        {
+            transforms::direction = 1; // specifically tell what direction to go in (rather than just reversing direction) such as to avoid benig stuck outside the bounds
+        }
+            
         transformMatrix = glm::scale(transformMatrix, glm::vec3(1.0f + transforms::VELOCITY * 0.05f * transforms::direction));
 
         break;
@@ -212,9 +223,18 @@ glm::mat4 handleTransform(transforms::TRANSFORM_TYPE TransformType, glm::mat4 tr
 
     case transforms::TRANSFORM_TYPE::Translate:
     {
-        float maxCoord = transformMatrix[3][0];
-        if (maxCoord + transforms::INITIAL_SHAPE_SCALE.x * transforms::SCALE_FACTOR_TRANSFORM_TO_COORDS > transforms::bounds::edgeTranslate ||
-            maxCoord - transforms::INITIAL_SHAPE_SCALE.x * transforms::SCALE_FACTOR_TRANSFORM_TO_COORDS < -transforms::bounds::edgeTranslate)
+        float maxCoord = abs(transformMatrix[0][0]);
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                if (i == 3 && j == 3) // skip bottom right which is junk
+                    break;
+                maxCoord = std::max(maxCoord, abs(transformMatrix[i][j]));
+            }
+        }
+
+        if (maxCoord + transforms::INITIAL_SHAPE_SCALE.x > transforms::bounds::edgeTranslate)
             transforms::direction = -transforms::direction;
         transformMatrix = glm::translate(transformMatrix, glm::vec3(transforms::VELOCITY * transforms::direction, 0.0f, 0.0f));
         break;
