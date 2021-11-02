@@ -142,10 +142,7 @@ namespace transforms
     glm::mat4 transformMatrix = glm::scale(glm::mat4(1.0f), INITIAL_SHAPE_SCALE);
     const glm::mat4 DEFAULT_TRANSFORM_MATRIX = transformMatrix;
     const float VELOCITY = 0.5f;
-    /* not sure how to explain SCALE_FACTOR_TRANSFORM_TO_COORDS.
-     * After scaling my initial shape down to 5%, my edges are now at 0.2.
-     * To check if touching bounds, must multiply by this constant (used in handleTransform)
-     */
+    // To check if touching bounds, must multiply by this constant (used in handleTransform)
     const float SCALE_FACTOR_TRANSFORM_TO_COORDS = 5;
 
     int direction = 1; // Controls what translate/scale does. If 1, grow/go right, if -1 shrink/go left
@@ -386,7 +383,8 @@ int main(void)
         glUniformMatrix4fv(transformUniformLoc, 1, GL_FALSE, glm::value_ptr(transforms::transformMatrix));
 
         unsigned int colorTransform = glGetUniformLocation(programID, "color");
-        glm::vec4 color = glm::vec4(0.5f, 0, 0.5f, 1.0);
+        double time = glfwGetTime();
+        glm::vec4 color = glm::vec4(sin(time / 4) * cos(time / 16), 0.1 + 0.6 * sin(time / 10), 0.2 + cos(time) * sin(time), 1.0);
         glUniform4fv(colorTransform, 1, glm::value_ptr(color));
 
         glDrawElements(GL_TRIANGLES, indicesForSelectedShape.size(), GL_UNSIGNED_INT, 0);
