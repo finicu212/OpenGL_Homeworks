@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <random>
 
 // Include GLEW
 #include "dependente\glew\glew.h"
@@ -17,7 +18,7 @@
 
 #include "shader.hpp"
 
-glm::uvec2 windowSizes(1024, 1024);
+glm::uvec2 windowSizes(800, 800);
 GLFWwindow* window;
 
 namespace shapes
@@ -168,6 +169,18 @@ namespace transforms
         float minScale = 0.0025f, maxScale = 0.195f;
         float edgeTranslate = 1.0f; // if pos.x > edgeTranslate, start moving left. if pos.x < -edgeTranslate, start moving right (with account for shape's size)
     };
+
+    glm::vec3 getRandomPosition(double time)
+    {
+        srand(sin(time * INT_FAST16_MAX) * INT_LEAST16_MAX); // div by 100 because it expects int and one second is too much waiting for a new seed
+        float xCoord = ((float) rand() / RAND_MAX) * 2 - 1; // * 2 - 1 to allow negative vals
+        srand(cos(time * INT_LEAST16_MIN) * INT_MAX / 10);
+        float yCoord = ((float) rand() / RAND_MAX) * 2 - 1;
+        xCoord *= (0.8 / INITIAL_SHAPE_SCALE.x);
+        yCoord *= (0.8 / INITIAL_SHAPE_SCALE.x);
+        std::cout << "Generated random pos: " << xCoord << ", " << yCoord << '\n';
+        return glm::vec3(xCoord, yCoord, 0.f);
+    }
 };
 
 // call this in the while loop to apply this tick's transform. returns updated transform matrix
@@ -359,6 +372,8 @@ int main(void)
 
             // acts as flag so that no need to set buffer data again
             shapes::DrawnShape = shapes::SelectedShape;
+
+            transforms::transformMatrix = glm::translate(transforms::DEFAULT_TRANSFORM_MATRIX, transforms::getRandomPosition(glfwGetTime()));
         }
 
         // Swap buffers
