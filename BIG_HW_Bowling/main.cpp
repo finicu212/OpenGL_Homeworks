@@ -1,17 +1,12 @@
-// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
-#include <random>
 
-// Include GLEW
 #include "dependente\glew\glew.h"
 
-// Include GLFW
 #include "dependente\glfw\glfw3.h"
 
-// Include GLM
 #include "dependente\glm\glm.hpp"
 #include "dependente\glm\gtc\matrix_transform.hpp"
 #include "dependente\glm\gtc\type_ptr.hpp"
@@ -35,6 +30,7 @@ void window_callback(GLFWwindow* window, int new_width, int new_height)
 int main(void)
 {
     Sphere bowlingBall(0.1f, 36, 36);
+    Plane bowlingAlley({ -0.5f, 0.5f }, { 0.0f, 18.0f }, -1.0f);
 
     // Initialise GLFW
     if (!glfwInit())
@@ -107,22 +103,14 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
 
-        // Swap buffers
         glfwSwapBuffers(window);
-
-        // Check for events
         glfwPollEvents();
-
-        // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT);
-
-        // Use our shader
         glUseProgram(programID);
 
         glm::mat4 view = glm::lookAt(glm::vec3(30.0f, 50.0f, 75.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) (windowSizes.x) / windowSizes.y, 1.0f, 10000.0f);
 
-        //bind VAO
         glBindVertexArray(vao);
 
         glm::mat4 model(1.0f);
@@ -130,7 +118,6 @@ int main(void)
 
         glm::mat4 mvp = projection * view * model;
 
-        // send variables to shader
         unsigned int transformUniformLoc = glGetUniformLocation(programID, "transform");
         glUniformMatrix4fv(transformUniformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 

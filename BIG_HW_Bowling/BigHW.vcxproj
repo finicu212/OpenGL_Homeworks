@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
@@ -28,6 +29,7 @@
     <None Include="SimpleVertexShader.vertexshader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Sphere.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
