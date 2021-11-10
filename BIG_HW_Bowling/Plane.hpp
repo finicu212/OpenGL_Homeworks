@@ -6,13 +6,12 @@
 #include "dependente\glm\gtc\matrix_transform.hpp"
 #include "dependente\glm\gtc\type_ptr.hpp"
 
-class Sphere
+class Plane
 {
 public:
-    Sphere(float radius);
-    Sphere(float radius, unsigned int sectors, unsigned int stacks);
-    ~Sphere() = default;
-    Sphere(const Sphere&) = delete;
+    Plane(unsigned int xSegments, unsigned int zSegments, float yLevel);
+    ~Plane() = default;
+    Plane(const Plane&) = delete;
 
 public:
     std::vector<glm::vec3> vertices;

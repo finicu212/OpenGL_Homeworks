@@ -13,6 +13,7 @@
 
 #include "shader.hpp"
 #include "Sphere.hpp"
+#include "Plane.hpp"
 
 glm::uvec2 windowSizes(800, 800);
 GLFWwindow* window;
@@ -30,7 +31,7 @@ void window_callback(GLFWwindow* window, int new_width, int new_height)
 int main(void)
 {
     Sphere bowlingBall(0.1f, 36, 36);
-    Plane bowlingAlley({ -0.5f, 0.5f }, { 0.0f, 18.0f }, -1.0f);
+    Plane bowlingAlley(8, 4, -1.0f);
 
     // Initialise GLFW
     if (!glfwInit())
@@ -60,7 +61,7 @@ int main(void)
 
     //specify the size of the rendering window
     glViewport(0, 0, windowSizes.x, windowSizes.y);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -79,10 +80,12 @@ int main(void)
     glBindVertexArray(vao);
   
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingAlley.indices.size() * sizeof(unsigned int), &bowlingAlley.indices[0], GL_STATIC_DRAW);
 
     //set attribute pointers
     glVertexAttribPointer(
@@ -108,7 +111,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(programID);
 
-        glm::mat4 view = glm::lookAt(glm::vec3(30.0f, 50.0f, 75.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1000.0f, -200.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) (windowSizes.x) / windowSizes.y, 1.0f, 10000.0f);
 
         glBindVertexArray(vao);
@@ -121,11 +124,12 @@ int main(void)
         unsigned int transformUniformLoc = glGetUniformLocation(programID, "transform");
         glUniformMatrix4fv(transformUniformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
-        glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        glm::vec4 color = glm::vec4(0.9f, 0.9f, 0.9f, 0.2f);
         unsigned int colorTransform = glGetUniformLocation(programID, "color");
         glUniform4fv(colorTransform, 1, glm::value_ptr(color));
 
-        glDrawElements(GL_TRIANGLES, bowlingBall.indices.size(), GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_TRIANGLES, bowlingBall.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 4 * 4 * 2, GL_UNSIGNED_INT, 0);
     }
 
     glDeleteBuffers(1, &vbo);
