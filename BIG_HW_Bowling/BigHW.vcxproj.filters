@@ -13,6 +13,9 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Cylinder.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleVertexShader.vertexshader">
@@ -38,6 +41,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Plane.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Cylinder.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

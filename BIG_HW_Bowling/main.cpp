@@ -11,6 +11,7 @@
 #include "dependente\glm\gtc\matrix_transform.hpp"
 #include "dependente\glm\gtc\type_ptr.hpp"
 
+#include "Cylinder.hpp"
 #include "shader.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
@@ -31,7 +32,8 @@ void window_callback(GLFWwindow* window, int new_width, int new_height)
 int main(void)
 {
     Sphere bowlingBall(0.1f, 36, 36);
-    Plane bowlingAlley(8, 4, -1.0f);
+    //Plane bowlingAlley(8, 4, -1.0f);
+    Cylinder cylinder(0.1f, 0.03f, 1.0f, 8, 6);
 
     // Initialise GLFW
     if (!glfwInit())
@@ -81,11 +83,13 @@ int main(void)
   
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     //glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, cylinder.vertices.size() * sizeof(float) * 3, &cylinder.vertices[0], GL_STATIC_DRAW);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingAlley.indices.size() * sizeof(unsigned int), &bowlingAlley.indices[0], GL_STATIC_DRAW);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingAlley.indices.size() * sizeof(unsigned int), &bowlingAlley.indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, cylinder.indices.size() * sizeof(unsigned int), &cylinder.indices[0], GL_STATIC_DRAW);
 
     //set attribute pointers
     glVertexAttribPointer(
@@ -129,7 +133,8 @@ int main(void)
         glUniform4fv(colorTransform, 1, glm::value_ptr(color));
 
         //glDrawElements(GL_TRIANGLES, bowlingBall.indices.size(), GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_TRIANGLES, 4 * 4 * 2, GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_TRIANGLES, 4 * 4 * 2, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, cylinder.indices.size(), GL_UNSIGNED_INT, 0);
     }
 
     glDeleteBuffers(1, &vbo);

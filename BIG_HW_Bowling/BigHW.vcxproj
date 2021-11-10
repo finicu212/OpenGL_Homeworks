@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -29,6 +30,7 @@
     <None Include="SimpleVertexShader.vertexshader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Sphere.hpp" />
   </ItemGroup>
