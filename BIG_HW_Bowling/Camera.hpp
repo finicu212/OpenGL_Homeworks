@@ -6,26 +6,26 @@
 
 class Camera
 {
-private:
-    glm::vec3 cameraPosition;
-    glm::vec3 cameraViewDirection;
-    glm::vec3 cameraUp;
+public:
+    glm::vec3 position;
+    glm::vec3 viewDirection;
+    glm::vec3 up;
     glm::vec3 right;
 
 public:
     Camera();
-    Camera(glm::vec3 cameraPosition);
-    Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp);
+    Camera(glm::vec3 position);
+    Camera(glm::vec3 position, glm::vec3 viewDirection, glm::vec3 cameraUp);
     ~Camera();
-
+    /*
     glm::vec3 getCameraPosition();
     glm::vec3 getCameraViewDirection();
     glm::vec3 getCameraUp();
 
-    void setCameraPosition(glm::vec3 cameraPosition);
-    void setCameraViewDirection(glm::vec3 cameraViewDirection);
-    void setCameraUp(glm::vec3 cameraUp);
-
+    void setPosition(glm::vec3 cameraPosition);
+    void setViewDirection(glm::vec3 cameraViewDirection);
+    void setUp(glm::vec3 cameraUp);
+    */
     void rotateOx(float angle);
     void rotateOy(float angle);
 

@@ -1,27 +1,27 @@
 #include "Camera.hpp"
 
-Camera::Camera(glm::vec3 cameraPosition)
+Camera::Camera(glm::vec3 position)
 {
-    this->cameraPosition = cameraPosition;
-    this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-    this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->right = glm::cross(cameraViewDirection, cameraUp);
+    this->position = position;
+    this->viewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->right = glm::cross(viewDirection, up);
 }
 
 Camera::Camera()
 {
-    this->cameraPosition = glm::vec3(0.0f, 0.0f, 100.0f);
-    this->cameraViewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-    this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->right = glm::cross(cameraViewDirection, cameraUp);
+    this->position = glm::vec3(0.0f, 0.0f, 100.0f);
+    this->viewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->right = glm::cross(viewDirection, up);
 }
 
-Camera::Camera(glm::vec3 cameraPosition, glm::vec3 cameraViewDirection, glm::vec3 cameraUp)
+Camera::Camera(glm::vec3 position, glm::vec3 viewDirection, glm::vec3 up)
 {
-    this->cameraPosition = cameraPosition;
-    this->cameraViewDirection = cameraViewDirection;
-    this->cameraUp = cameraUp;
-    this->right = glm::cross(cameraViewDirection, cameraUp);
+    this->position = position;
+    this->viewDirection = viewDirection;
+    this->up = up;
+    this->right = glm::cross(viewDirection, up);
 }
 
 Camera::~Camera()
@@ -30,75 +30,73 @@ Camera::~Camera()
 
 void Camera::rotateOx(float angle)
 {
-    cameraViewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(cameraViewDirection, 1.0f)));
-    //cameraUp = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(cameraUp, 1.0f)));
-    cameraUp = glm::cross(cameraViewDirection, right);
+    viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(viewDirection, 1.0f)));
+    up = glm::cross(viewDirection, right);
 }
 
 void Camera::rotateOy(float angle)
 {
-    cameraViewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, cameraUp) * glm::vec4(cameraViewDirection, 1.0f)));
-    //cameraUp = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(cameraUp, 1.0f)));
-    cameraUp = glm::cross(cameraViewDirection, right);
+    viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, up) * glm::vec4(viewDirection, 1.0f)));
+    up = glm::cross(viewDirection, right);
 }
 
 void Camera::translateUp(float speed)
 {
-    cameraPosition = cameraPosition + speed * cameraUp;
+    position = position + speed * up;
 }
 
 void Camera::translateDown(float speed)
 {
-    cameraPosition = cameraPosition - speed * cameraUp;
+    position = position - speed * up;
 }
 
 void Camera::translateFront(float speed)
 {
-    cameraPosition = cameraPosition + speed * cameraViewDirection;
+    position = position + speed * viewDirection;
 }
 
 void Camera::translateBack(float speed)
 {
-    cameraPosition = cameraPosition - speed * cameraViewDirection;
+    position = position - speed * viewDirection;
 }
 
 void Camera::translateRight(float speed)
 {
-    cameraPosition = cameraPosition + speed * right;
+    position = position + speed * right;
 }
 
 void Camera::translateLeft(float speed)
 {
-    cameraPosition = cameraPosition - speed * right;
+    position = position - speed * right;
 }
-
-glm::vec3 Camera::getCameraPosition()
+/*
+glm::vec3 Camera::getPosition()
 {
-    return cameraPosition;
+    return position;
 }
 
-glm::vec3 Camera::getCameraViewDirection()
+glm::vec3 Camera::getViewDirection()
 {
-    return cameraViewDirection;
+    return viewDirection;
 }
 
-glm::vec3 Camera::getCameraUp()
+glm::vec3 Camera::getUp()
 {
-    return cameraUp;
+    return up;
 }
 
-void Camera::setCameraPosition(glm::vec3 cameraPosition)
+void Camera::setPosition(glm::vec3 position)
 {
-    this->cameraPosition = cameraPosition;
+    this->position = position;
 }
 
-void Camera::setCameraUp(glm::vec3 cameraUp)
+void Camera::setUp(glm::vec3 up)
 {
-    this->cameraUp = cameraUp;
+    this->up = up;
 }
 
-void Camera::setCameraViewDirection(glm::vec3 cameraViewDirection)
+void Camera::setViewDirection(glm::vec3 viewDirection)
 {
-    this->cameraViewDirection = cameraViewDirection;
+    this->viewDirection = viewDirection;
 }
-
+*/

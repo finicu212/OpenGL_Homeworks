@@ -11,6 +11,7 @@
 #include "dependente\glm\gtc\matrix_transform.hpp"
 #include "dependente\glm\gtc\type_ptr.hpp"
 
+#include "Camera.hpp"
 #include "Cylinder.hpp"
 #include "shader.hpp"
 #include "Sphere.hpp"
@@ -96,7 +97,9 @@ int main(void)
 
     glfwSetFramebufferSizeCallback(window, window_callback);
 
-    glm::mat4 view = glm::lookAt(glm::vec3(-500.0f, 50.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Camera cam(glm::vec3(-500.0f, 50.0f, 0.0f));
+
+    glm::mat4 view = glm::lookAt(cam.getCameraPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(windowSizes.x) / windowSizes.y, 1.0f, 100000.0f);
 
     // Check if the window was closed
