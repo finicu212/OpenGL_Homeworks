@@ -18,12 +18,57 @@
 #include "Plane.hpp"
 #include "Popice.hpp"
 
-glm::uvec2 windowSizes(800, 800);
+Camera cam(glm::vec3(-10.0f, 2.5f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+glm::uvec2 windowSizes(1280, 720);
 GLFWwindow* window;
+
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    
+
+}
+
+void camera_input()
+{
+    float speedFast, speedSlow = deltaTime * 0.7f;
+    std::cout << deltaTime << '\n';
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        speedSlow = deltaTime * 4.0f;
+    else
+        speedSlow = deltaTime * 0.7f;
+
+    speedFast = speedSlow * 10.0f;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        std::cout << "Front\n";
+        cam.translateFront(speedFast);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        cam.translateBack(speedFast);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cam.translateLeft(speedFast);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cam.translateRight(speedFast);
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        cam.translateUp(speedFast);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
+        std::cout << "Front\n";
+        cam.translateDown(speedFast);
+    }
+
 }
 
 void window_callback(GLFWwindow* window, int new_width, int new_height)
@@ -97,16 +142,18 @@ int main(void)
 
     glfwSetFramebufferSizeCallback(window, window_callback);
 
-    Camera cam(glm::vec3(-500.0f, 50.0f, 0.0f));
-
-    glm::mat4 view = glm::lookAt(cam.getCameraPosition(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(windowSizes.x) / windowSizes.y, 1.0f, 100000.0f);
+    glm::mat4 view;
+    glm::mat4 projection;
 
     // Check if the window was closed
     while (!glfwWindowShouldClose(window))
     {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
+
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -115,6 +162,15 @@ int main(void)
 
         glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
+
+        if (deltaTime > 0.01f)
+        {
+            std::cout << cam.position.x << "  " << cam.position.y << "  " << cam.position.z << '\n';
+        }
+
+        camera_input();
+        view = glm::lookAt(cam.position, cam.position + cam.viewDirection, cam.up);
+        projection = glm::perspective(cam.FOV, (float) 16 / 9, 1.0f, 100000.0f);
 
         glm::mat4 mvp;
 

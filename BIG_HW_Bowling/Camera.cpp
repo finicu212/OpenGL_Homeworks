@@ -31,13 +31,13 @@ Camera::~Camera()
 void Camera::rotateOx(float angle)
 {
     viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(viewDirection, 1.0f)));
-    up = glm::cross(viewDirection, right);
+    up = glm::normalize(glm::cross(viewDirection, right));
 }
 
 void Camera::rotateOy(float angle)
 {
     viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, up) * glm::vec4(viewDirection, 1.0f)));
-    up = glm::cross(viewDirection, right);
+    up = glm::normalize(glm::cross(viewDirection, right));
 }
 
 void Camera::translateUp(float speed)

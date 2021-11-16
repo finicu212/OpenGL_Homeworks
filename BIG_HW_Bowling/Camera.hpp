@@ -11,6 +11,7 @@ public:
     glm::vec3 viewDirection;
     glm::vec3 up;
     glm::vec3 right;
+    float FOV = 65.0f;
 
 public:
     Camera();

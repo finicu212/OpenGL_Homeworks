@@ -19,6 +19,9 @@
     <ClCompile Include="Popice.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -42,6 +45,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Popice.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
