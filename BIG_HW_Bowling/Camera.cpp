@@ -1,20 +1,8 @@
 #include "Camera.hpp"
+#include <math.h>
+#include <iostream>
 
-Camera::Camera(glm::vec3 position)
-{
-    this->position = position;
-    this->viewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->right = glm::cross(viewDirection, up);
-}
-
-Camera::Camera()
-{
-    this->position = glm::vec3(0.0f, 0.0f, 100.0f);
-    this->viewDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->right = glm::cross(viewDirection, up);
-}
+#define PI_OVER_TWO 1.57079632679
 
 Camera::Camera(glm::vec3 position, glm::vec3 viewDirection, glm::vec3 up)
 {
@@ -22,22 +10,48 @@ Camera::Camera(glm::vec3 position, glm::vec3 viewDirection, glm::vec3 up)
     this->viewDirection = viewDirection;
     this->up = up;
     this->right = glm::cross(viewDirection, up);
+    this->pitch = 0.f;
+    this->yaw = 0.f;
 }
 
-Camera::~Camera()
+Camera::Camera(glm::vec3 position) : Camera(position, glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {}
+
+Camera::Camera() : Camera(glm::vec3(0.0f, 0.0f, 100.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {}
+
+void Camera::updateRotateVecs()
 {
+    //viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(viewDirection, 1.0f)));
+
+    viewDirection.x = -sinf(yaw) * cosf(pitch);
+    viewDirection.y = -sinf(pitch);
+    viewDirection.z = -cos(yaw) * cos(pitch);
+
+    right.x = -cos(yaw);
+    right.y = 0.0;
+    right.z = sin(yaw);
+    up = glm::cross(viewDirection, right);
 }
 
 void Camera::rotateOx(float angle)
 {
-    viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, right) * glm::vec4(viewDirection, 1.0f)));
-    up = glm::normalize(glm::cross(viewDirection, right));
+    pitch += angle;
+
+    if (pitch > PI_OVER_TWO) {
+        pitch = PI_OVER_TWO - 0.0001f;
+    }
+    else if (pitch < -PI_OVER_TWO) {
+        pitch = -PI_OVER_TWO + 0.0001f;
+    }
+
+    std::cout << pitch << " ";
+    updateRotateVecs();
 }
 
 void Camera::rotateOy(float angle)
 {
-    viewDirection = glm::vec3(glm::normalize(glm::rotate(glm::mat4(1.0f), angle, up) * glm::vec4(viewDirection, 1.0f)));
-    up = glm::normalize(glm::cross(viewDirection, right));
+    yaw += angle;
+
+    updateRotateVecs();
 }
 
 void Camera::translateUp(float speed)

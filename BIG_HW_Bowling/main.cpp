@@ -18,22 +18,23 @@
 #include "Plane.hpp"
 #include "Popice.hpp"
 
-Camera cam(glm::vec3(-10.0f, 2.5f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+Camera cam(glm::vec3(-5.0f, 5.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 glm::uvec2 windowSizes(1280, 720);
 GLFWwindow* window;
-
-float deltaTime = 0.0f;	// Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
 }
 
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
+
+double mousePosX, mousePosY, mouseDeltaX, mouseDeltaY;
+
 void camera_input()
 {
-    float speedFast, speedSlow = deltaTime * 0.7f;
-    std::cout << deltaTime << '\n';
+    float speedFast, speedSlow = deltaTime * 0.7, speedRotate = deltaTime * 0.5f;
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         speedSlow = deltaTime * 4.0f;
@@ -44,18 +45,17 @@ void camera_input()
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        std::cout << "Front\n";
         cam.translateFront(speedFast);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         cam.translateBack(speedFast);
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         cam.translateLeft(speedFast);
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         cam.translateRight(speedFast);
     }
@@ -65,10 +65,26 @@ void camera_input()
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
-        std::cout << "Front\n";
         cam.translateDown(speedFast);
     }
-
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+    {
+        cam.rotateOx(-speedSlow);
+    }
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+    {
+        cam.rotateOx(speedSlow);
+    }
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+    {
+        cam.rotateOy(speedSlow);
+    }
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+    {
+        cam.rotateOy(-speedSlow);
+    }
+    cam.rotateOy(mouseDeltaX * speedRotate);
+    cam.rotateOx(-mouseDeltaY * speedRotate);
 }
 
 void window_callback(GLFWwindow* window, int new_width, int new_height)
@@ -111,6 +127,7 @@ int main(void)
     glClear(GL_COLOR_BUFFER_BIT);
 
     glfwSetKeyCallback(window, key_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     GLuint vbo, vao, ibo;
     glGenVertexArrays(1, &vao);
@@ -120,8 +137,8 @@ int main(void)
     glBindVertexArray(vao);
 
     Sphere bowlingBall(0.08f, 24, 24); // radius, sectors, stacks
-    //Plane bowlingAlley(8, 4, -1.0f);
-    Popice popics(glm::vec3(0.0f, 2.0f, 0.0f), 0.4f); // pos (x, y, z), space between pins
+    Plane bowlingAlley(8, 4, -1.0f);
+    Popice popics(glm::vec3(10.0f, 0.0f, 0.0f), 0.4f); // pos (x, y, z), space between pins
   
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     //glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
@@ -151,6 +168,11 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
 
+        double oldMousePosX = mousePosX, oldMousePosY = mousePosY;
+        glfwGetCursorPos(window, &mousePosX, &mousePosY);
+        mouseDeltaX = oldMousePosX - mousePosX;
+        mouseDeltaY = oldMousePosY - mousePosY;
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -162,11 +184,6 @@ int main(void)
 
         glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
-
-        if (deltaTime > 0.01f)
-        {
-            std::cout << cam.position.x << "  " << cam.position.y << "  " << cam.position.z << '\n';
-        }
 
         camera_input();
         view = glm::lookAt(cam.position, cam.position + cam.viewDirection, cam.up);
