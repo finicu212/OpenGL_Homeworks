@@ -17,4 +17,6 @@ public:
 public:
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
+    uint16_t shaderID;
+    glm::mat4 model;
 };

@@ -22,17 +22,23 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Popice.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SimpleFragmentShader.fragmentshader" />
-    <None Include="SimpleVertexShader.vertexshader" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Plane.hpp" />
+    <ClInclude Include="Popice.hpp" />
     <ClInclude Include="Sphere.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Cylinder.fragmentshader" />
+    <None Include="shaders\Cylinder.vertexshader" />
+    <None Include="shaders\Popice.fragmentshader" />
+    <None Include="shaders\Popice.vertexshader" />
+    <None Include="shaders\Sphere.fragmentshader" />
+    <None Include="shaders\Sphere.vertexshader" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E8D7D48F-7AB1-4260-BCEC-8CC11D9FBC01}</ProjectGuid>

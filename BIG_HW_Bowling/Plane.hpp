@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "shader.hpp"
 
 #include "dependente\glm\glm.hpp"
 #include "dependente\glm\gtc\matrix_transform.hpp"
@@ -16,4 +17,5 @@ public:
 public:
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
+    uint16_t shaderID;
 };

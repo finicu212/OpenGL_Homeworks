@@ -15,6 +15,7 @@
 #include "shader.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
+#include "Popice.hpp"
 
 glm::uvec2 windowSizes(800, 800);
 GLFWwindow* window;
@@ -31,18 +32,12 @@ void window_callback(GLFWwindow* window, int new_width, int new_height)
 
 int main(void)
 {
-    Sphere bowlingBall(0.1f, 36, 36);
-    //Plane bowlingAlley(8, 4, -1.0f);
-    Cylinder cylinder(0.1f, 0.03f, 1.0f, 8, 6);
-
     // Initialise GLFW
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
         return -1;
     }
-
-    // Open a window and create its OpenGL context
 
     window = glfwCreateWindow(windowSizes.x, windowSizes.y, "Bowling Alley", NULL, NULL);
     if (window == NULL) {
@@ -71,25 +66,22 @@ int main(void)
 
     glfwSetKeyCallback(window, key_callback);
 
-    // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
-
     GLuint vbo, vao, ibo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ibo);
 
     glBindVertexArray(vao);
+
+    Sphere bowlingBall(0.08f, 24, 24); // radius, sectors, stacks
+    //Plane bowlingAlley(8, 4, -1.0f);
+    Popice popics(glm::vec3(0.0f, 2.0f, 0.0f), 0.4f); // pos (x, y, z), space between pins
   
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    //glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
     //glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, cylinder.vertices.size() * sizeof(float) * 3, &cylinder.vertices[0], GL_STATIC_DRAW);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingAlley.indices.size() * sizeof(unsigned int), &bowlingAlley.indices[0], GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, cylinder.indices.size() * sizeof(unsigned int), &cylinder.indices[0], GL_STATIC_DRAW);
 
     //set attribute pointers
     glVertexAttribPointer(
@@ -104,6 +96,9 @@ int main(void)
 
     glfwSetFramebufferSizeCallback(window, window_callback);
 
+    glm::mat4 view = glm::lookAt(glm::vec3(-500.0f, 50.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(windowSizes.x) / windowSizes.y, 1.0f, 100000.0f);
+
     // Check if the window was closed
     while (!glfwWindowShouldClose(window))
     {
@@ -113,34 +108,51 @@ int main(void)
         glfwSwapBuffers(window);
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(programID);
+        glUseProgram(bowlingBall.shaderID);
 
-        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1000.0f, -200.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) (windowSizes.x) / windowSizes.y, 1.0f, 10000.0f);
+        glBufferData(GL_ARRAY_BUFFER, bowlingBall.vertices.size() * sizeof(float) * 3, &bowlingBall.vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingBall.indices.size() * sizeof(unsigned int), &bowlingBall.indices[0], GL_STATIC_DRAW);
+
+        glm::mat4 mvp;
+
+        bowlingBall.model = glm::rotate(bowlingBall.model, 2.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        mvp = projection * view * bowlingBall.model;
+
+        unsigned int transformUniformLoc = glGetUniformLocation(bowlingBall.shaderID, "transform");
+        glUniformMatrix4fv(transformUniformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+        glm::vec4 color(0.75f, 0.2f, 0.2f, 0.2f);
+        unsigned int colorTransform = glGetUniformLocation(bowlingBall.shaderID, "color");
+        glUniform4fv(colorTransform, 1, glm::value_ptr(color));
 
         glBindVertexArray(vao);
 
-        glm::mat4 model(1.0f);
-        model = glm::rotate(model, (float) glfwGetTime() * 100, glm::vec3(0.2f, 1.0f, 0.0f));
+        glDrawElements(GL_TRIANGLES, bowlingBall.indices.size(), GL_UNSIGNED_INT, 0);
 
-        glm::mat4 mvp = projection * view * model;
+        unsigned int popicsTransformLoc = glGetUniformLocation(popics.shaderID, "transform");
+        unsigned int popicsColorLoc = glGetUniformLocation(popics.shaderID, "color");
+        for (auto const& popicaPos : popics.popicaMapPositions)
+        {
+            glBufferData(GL_ARRAY_BUFFER, popics.defaultPopic.vertices.size() * sizeof(float) * 3, &popics.defaultPopic.vertices[0], GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, popics.defaultPopic.indices.size() * sizeof(unsigned int), &popics.defaultPopic.indices[0], GL_STATIC_DRAW);
 
-        unsigned int transformUniformLoc = glGetUniformLocation(programID, "transform");
-        glUniformMatrix4fv(transformUniformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+            glm::mat4 currentPopicModel = glm::translate(glm::mat4(1.0f), popicaPos);
+            currentPopicModel = glm::rotate(currentPopicModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+            mvp = projection * view * currentPopicModel;
+            glUniformMatrix4fv(popicsTransformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+            glUniform4fv(popicsColorLoc, 1, glm::value_ptr(glm::vec4(0.9f, 0.9f, 0.9f, 1.0f)));
 
-        glm::vec4 color = glm::vec4(0.9f, 0.9f, 0.9f, 0.2f);
-        unsigned int colorTransform = glGetUniformLocation(programID, "color");
-        glUniform4fv(colorTransform, 1, glm::value_ptr(color));
-
-        //glDrawElements(GL_TRIANGLES, bowlingBall.indices.size(), GL_UNSIGNED_INT, 0);
+            glBindVertexArray(vao);
+            glDrawElements(GL_TRIANGLES, popics.defaultPopic.indices.size(), GL_UNSIGNED_INT, 0);
+        }
         //glDrawElements(GL_TRIANGLES, 4 * 4 * 2, GL_UNSIGNED_INT, 0);
-        glDrawElements(GL_TRIANGLES, cylinder.indices.size(), GL_UNSIGNED_INT, 0);
+        
     }
 
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ibo);
     glDeleteVertexArrays(1, &vao);
-    glDeleteProgram(programID);
+    glDeleteProgram(bowlingBall.shaderID);
 
     glfwTerminate();
 

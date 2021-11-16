@@ -6,6 +6,8 @@
 */
 Plane::Plane(unsigned int xSegments, unsigned int zSegments, float yLevel)
 {
+    shaderID = LoadShaders("shaders/Plane.vertexshader", "shaders/Plane.fragmentshader");
+
     bool oddRow = false;
 
     float dX = 1.0f / xSegments;

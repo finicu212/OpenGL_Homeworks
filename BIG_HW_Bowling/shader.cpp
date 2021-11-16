@@ -9,8 +9,6 @@ using namespace std;
 #include <stdlib.h>
 #include <string.h>
 
-#include "dependente\glew\glew.h"
-
 #include "shader.hpp"
 
 GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path){

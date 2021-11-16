@@ -18,8 +18,16 @@ std::vector<float> Cylinder::buildUnitCircleVertices(int sectorCount)
     return unitCircleVertices;
 }
 
+void Cylinder::addVertex(glm::vec3 pos)
+{
+    vertices.push_back(pos + xyzPos);
+}
+
+Cylinder::Cylinder() : Cylinder(0.01f, 0.003f, 0.1f, 8, 6) {}
+
 Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectorCount, int stackCount)
 {
+    this->xyzPos = xyzPos;
     std::vector<float> unitCircleVertices = buildUnitCircleVertices(sectorCount);
     float x, y, z;
     float radius;
@@ -34,7 +42,7 @@ Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectorCo
         {
             x = unitCircleVertices[k];
             y = unitCircleVertices[k + 1];
-            vertices.push_back(glm::vec3(x * radius, y * radius, z));
+            addVertex(glm::vec3(x * radius, y * radius, z));
         }
     }
 
@@ -42,13 +50,13 @@ Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectorCo
 
     // put vertices of base of cylinder
     z = -height * 0.5f;
-    vertices.push_back(glm::vec3(0, 0, z));
+    addVertex(glm::vec3(0, 0, z));
 
     for (int i = 0, j = 0; i < sectorCount; ++i, j += 3)
     {
         x = unitCircleVertices[j];
         y = unitCircleVertices[j + 1];
-        vertices.push_back(glm::vec3(x * baseRadius, y * baseRadius, z));
+        addVertex(glm::vec3(x * baseRadius, y * baseRadius, z));
     }
 
     // remember where the base vertices start
@@ -56,13 +64,13 @@ Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectorCo
 
     // put vertices of top of cylinder
     z = height * 0.5f;
-    vertices.push_back(glm::vec3(0, 0, z));
+    addVertex(glm::vec3(0, 0, z));
 
     for (int i = 0, j = 0; i < sectorCount; ++i, j += 3)
     {
         x = unitCircleVertices[j];
         y = unitCircleVertices[j + 1];
-        vertices.push_back(glm::vec3(x * topRadius, y * topRadius, z));
+        addVertex(glm::vec3(x * topRadius, y * topRadius, z));
     }
 
     // put indices for sides
