@@ -5,12 +5,15 @@
 
 #define PI 3.14159265359
 
+void Sphere::loadShader()
+{
+    shaderID = LoadShaders("shaders/Sphere.vertexshader", "shaders/Sphere.fragmentshader");
+}
+
 Sphere::Sphere(float radius) : Sphere(radius, radius * 24.0, radius * 24.0) {}
 
 Sphere::Sphere(float radius, unsigned int sectors, unsigned int stacks)
 {
-    shaderID = LoadShaders("shaders/Sphere.vertexshader", "shaders/Sphere.fragmentshader");
-
     vertices.reserve(stacks * sectors);
     indices.reserve(stacks * sectors * 6);
     const float STEP_STACK = PI / stacks;

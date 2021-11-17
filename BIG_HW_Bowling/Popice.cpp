@@ -2,9 +2,13 @@
 
 #include <iostream>
 
-Popice::Popice(glm::vec3 xyzPos, float popicaSpace)
+void Popice::loadShader()
 {
     shaderID = LoadShaders("shaders/Popice.vertexshader", "shaders/Popice.fragmentshader");
+}
+
+Popice::Popice(glm::vec3 xyzPos, float popicaSpace)
+{
     model = glm::mat4(1.0f);
     const float SCALE_FACTOR = 12.0f, POPICA_RADIUS = 0.01f;
     defaultPopic = Cylinder(POPICA_RADIUS, POPICA_RADIUS / 2, 0.1f, 8, 6);

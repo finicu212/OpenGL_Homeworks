@@ -43,7 +43,6 @@ void Camera::rotateOx(float angle)
         pitch = -PI_OVER_TWO + 0.0001f;
     }
 
-    std::cout << pitch << " ";
     updateRotateVecs();
 }
 

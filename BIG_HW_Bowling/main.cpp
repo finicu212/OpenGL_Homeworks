@@ -21,17 +21,17 @@
 Camera cam(glm::vec3(-5.0f, 5.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 glm::uvec2 windowSizes(1280, 720);
 GLFWwindow* window;
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-
-}
+Sphere bowlingBall(0.08f, 24, 24); // radius, sectors, stacks
+Popice popics(glm::vec3(10.0f, 0.0f, 0.0f), 0.4f); // pos (x, y, z), space between pins
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
 double mousePosX, mousePosY, mouseDeltaX, mouseDeltaY;
 
+bool ballIsGoing = false;
+bool strikeAnimDone = false;
+float strikeAnimAngle = 0.0f;
 void camera_input()
 {
     float speedFast, speedSlow = deltaTime * 0.7, speedRotate = deltaTime * 0.5f;
@@ -67,24 +67,42 @@ void camera_input()
     {
         cam.translateDown(speedFast);
     }
-    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-    {
-        cam.rotateOx(-speedSlow);
-    }
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-    {
-        cam.rotateOx(speedSlow);
-    }
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-    {
-        cam.rotateOy(speedSlow);
-    }
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-    {
-        cam.rotateOy(-speedSlow);
-    }
     cam.rotateOy(mouseDeltaX * speedRotate);
     cam.rotateOx(-mouseDeltaY * speedRotate);
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+    {
+        ballIsGoing = true;
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+    {
+        ballIsGoing = false;
+        strikeAnimDone = false;
+        strikeAnimAngle = 0.0f;
+        bowlingBall.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+    }
+}
+
+glm::mat4 doStrikeAnimation(glm::mat4 popiceModel)
+{
+    static const float speed = 0.2f;
+    if (strikeAnimAngle < 90.0f)
+        strikeAnimAngle += speed;
+    else
+        strikeAnimDone = true;
+    return glm::rotate(popiceModel, strikeAnimAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+glm::mat4 doBallAnimation(glm::mat4 sphereModel)
+{
+    static const float speed = deltaTime * 0.1f;
+    if (ballIsGoing)
+    {
+        sphereModel = glm::translate(sphereModel, glm::vec3(speed, 0.0, 0.0));
+        sphereModel = glm::rotate(sphereModel, speed * 10, glm::vec3(1.0f, 0.0f, 0.0f));
+    }
+
+    return sphereModel;
 }
 
 void window_callback(GLFWwindow* window, int new_width, int new_height)
@@ -118,16 +136,16 @@ int main(void)
         return -1;
     }
 
-    //specify the size of the rendering window
     glViewport(0, 0, windowSizes.x, windowSizes.y);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glfwSetKeyCallback(window, key_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    bowlingBall.loadShader();
+    popics.loadShader();
 
     GLuint vbo, vao, ibo;
     glGenVertexArrays(1, &vao);
@@ -135,16 +153,9 @@ int main(void)
     glGenBuffers(1, &ibo);
 
     glBindVertexArray(vao);
-
-    Sphere bowlingBall(0.08f, 24, 24); // radius, sectors, stacks
-    Plane bowlingAlley(8, 4, -1.0f);
-    Popice popics(glm::vec3(10.0f, 0.0f, 0.0f), 0.4f); // pos (x, y, z), space between pins
   
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    //glBufferData(GL_ARRAY_BUFFER, bowlingAlley.vertices.size() * sizeof(float) * 3, &bowlingAlley.vertices[0], GL_STATIC_DRAW);
-    
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, bowlingAlley.indices.size() * sizeof(unsigned int), &bowlingAlley.indices[0], GL_STATIC_DRAW);
 
     //set attribute pointers
     glVertexAttribPointer(
@@ -187,11 +198,11 @@ int main(void)
 
         camera_input();
         view = glm::lookAt(cam.position, cam.position + cam.viewDirection, cam.up);
-        projection = glm::perspective(cam.FOV, (float) 16 / 9, 1.0f, 100000.0f);
+        projection = glm::perspective(cam.FOV, 16.0f / 9.0f, 0.01f, 100000.0f);
 
         glm::mat4 mvp;
-
-        bowlingBall.model = glm::rotate(bowlingBall.model, 2.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        
+        bowlingBall.model = doBallAnimation(bowlingBall.model);
         mvp = projection * view * bowlingBall.model;
 
         unsigned int transformUniformLoc = glGetUniformLocation(bowlingBall.shaderID, "transform");
@@ -214,6 +225,16 @@ int main(void)
 
             glm::mat4 currentPopicModel = glm::translate(glm::mat4(1.0f), popicaPos);
             currentPopicModel = glm::rotate(currentPopicModel, -90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+            if (!strikeAnimDone)
+            {
+                if (bowlingBall.model[3][0] > 9.5f) // if in progress
+                    currentPopicModel = doStrikeAnimation(currentPopicModel);
+            }
+            else
+            {
+                currentPopicModel = glm::rotate(currentPopicModel, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+            }
             mvp = projection * view * currentPopicModel;
             glUniformMatrix4fv(popicsTransformLoc, 1, GL_FALSE, glm::value_ptr(mvp));
             glUniform4fv(popicsColorLoc, 1, glm::value_ptr(glm::vec4(0.9f, 0.9f, 0.9f, 1.0f)));
@@ -221,8 +242,6 @@ int main(void)
             glBindVertexArray(vao);
             glDrawElements(GL_TRIANGLES, popics.defaultPopic.indices.size(), GL_UNSIGNED_INT, 0);
         }
-        //glDrawElements(GL_TRIANGLES, 4 * 4 * 2, GL_UNSIGNED_INT, 0);
-        
     }
 
     glDeleteBuffers(1, &vbo);

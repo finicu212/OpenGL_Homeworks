@@ -13,6 +13,7 @@ public:
     Sphere(float radius, unsigned int sectors, unsigned int stacks);
     ~Sphere() = default;
     Sphere(const Sphere&) = delete;
+    void loadShader();
 
 public:
     std::vector<glm::vec3> vertices;

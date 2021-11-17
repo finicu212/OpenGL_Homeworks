@@ -17,6 +17,7 @@ public:
     ~Popice() = default;
     Popice(const Popice&) = delete;
     Popice() = delete;
+    void loadShader();
 
 public:
     uint32_t numTriangles;
