@@ -22,7 +22,6 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Popice.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -30,7 +29,6 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Cylinder.hpp" />
-    <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Popice.hpp" />
     <ClInclude Include="Sphere.hpp" />
   </ItemGroup>

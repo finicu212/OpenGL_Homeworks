@@ -7,9 +7,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Sphere.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sphere.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Plane.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Cylinder.hpp">
