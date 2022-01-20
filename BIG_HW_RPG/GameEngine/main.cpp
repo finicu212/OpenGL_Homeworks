@@ -5,100 +5,125 @@
 #include "Model Loading\texture.h"
 #include "Model Loading\meshLoaderObj.h"
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 void processKeyboardInput ();
+
+// todo: refactor globals away (leave window and camera) 30min
+
+bool toggleUI = true; // button press hides UI (makes this false)
+float sliderValue; // sun pos modifier from UIi
 
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-Window window("Game Engine", 800, 800);
+Window window("Game Engine", 1920, 1080);
+GLFWwindow* pWindow = window.getWindow(); // todo: ew 
+double mousePosX, mousePosY, mouseDeltaX, mouseDeltaY;
 Camera camera;
 
 glm::vec3 lightColor = glm::vec3(1.0f);
-glm::vec3 lightPos = glm::vec3(-180.0f, 100.0f, -200.0f);
+glm::vec3 lightPos = glm::vec3(-180.0f, 150.0f, -200.0f);
+
+// rotate around a point <pt> away on <rotationAxis> axis
+glm::mat4 rotateAroundPoint(glm::mat4 modelMatrix, const glm::vec3& pt, const glm::vec3& rotationAxis, float rotateSpeed, float t)
+{   
+	modelMatrix = glm::translate(modelMatrix, pt);
+	modelMatrix = glm::rotate(modelMatrix, rotateSpeed * t, rotationAxis);
+	return glm::translate(modelMatrix, -pt);
+}
 
 int main()
 {
 	glClearColor(0.2f, 0.8f, 1.0f, 1.0f);
 
+	// imgui
+	const char* glsl_version = "#version 400";
+
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+	ImVec4 clear_color = ImColor(0x49, 0xA6, 0x95);
+
+	glEnable(GL_DEPTH_TEST);
+
 	//building and compiling shader program
 	Shader shader("Shaders/vertex_shader.glsl", "Shaders/fragment_shader.glsl");
+	Shader skyShader("Shaders/sky_vertex_shader.glsl", "Shaders/sky_fragment_shader.glsl");
 	Shader sunShader("Shaders/sun_vertex_shader.glsl", "Shaders/sun_fragment_shader.glsl");
 	Shader mountainShader("Shaders/hill_vertex_shader.glsl", "Shaders/hill_fragment_shader.glsl");
+	Shader oceanShader("Shaders/ocean_vertex_shader.glsl", "Shaders/ocean_fragment_shader.glsl");
 
 	//Textures
 	GLuint tex = loadBMP("Resources/Textures/wood.bmp");
 	GLuint tex2 = loadBMP("Resources/Textures/rock.bmp");
 	GLuint tex3 = loadBMP("Resources/Textures/water.bmp");
-
-	glEnable(GL_DEPTH_TEST);
-
-	//Test custom mesh loading
-	std::vector<Vertex> vert;
-	vert.push_back(Vertex());
-	vert[0].pos = glm::vec3(10.5f, 10.5f, 0.0f);
-	vert[0].textureCoords = glm::vec2(1.0f, 1.0f);
-
-	vert.push_back(Vertex());
-	vert[1].pos = glm::vec3(10.5f, -10.5f, 0.0f);
-	vert[1].textureCoords = glm::vec2(1.0f, 0.0f);
-
-	vert.push_back(Vertex());
-	vert[2].pos = glm::vec3(-10.5f, -10.5f, 0.0f);
-	vert[2].textureCoords = glm::vec2(0.0f, 0.0f);
-
-	vert.push_back(Vertex());
-	vert[3].pos = glm::vec3(-10.5f, 10.5f, 0.0f);
-	vert[3].textureCoords = glm::vec2(0.0f, 1.0f);
-
-	vert[0].normals = glm::normalize(glm::cross(vert[1].pos - vert[0].pos, vert[3].pos - vert[0].pos));
-	vert[1].normals = glm::normalize(glm::cross(vert[2].pos - vert[1].pos, vert[0].pos - vert[1].pos));
-	vert[2].normals = glm::normalize(glm::cross(vert[3].pos - vert[2].pos, vert[1].pos - vert[2].pos));
-	vert[3].normals = glm::normalize(glm::cross(vert[0].pos - vert[3].pos, vert[2].pos - vert[3].pos));
-
-	std::vector<int> ind = { 0, 1, 3,   
-		1, 2, 3 };
+	GLuint texSky = loadBMP("Resources/Textures/sky2.bmp");
+	GLuint texPenguin = loadBMP("Resources/Textures/penguin.bmp");
+	GLuint texTree = loadBMP("Resources/Textures/tree.bmp");
 
 	std::vector<Texture> textures;
-	textures.push_back(Texture());
-	textures[0].id = tex;
-	textures[0].type = "texture_diffuse";
+	textures.push_back(Texture(tex, "texture_diffuse"));
 
 	std::vector<Texture> textures2;
-	textures2.push_back(Texture());
-	textures2[0].id = tex2;
-	textures2[0].type = "texture_diffuse";
+	textures2.push_back(Texture(tex2, "texture_diffuse"));
 
 	std::vector<Texture> textures3;
-	textures3.push_back(Texture());
-	textures3[0].id = tex3;
-	textures3[0].type = "texture_diffuse";
+	textures3.push_back(Texture(tex3, "texture_diffuse"));
 
-	Mesh mesh(vert, ind, textures3);
+    std::vector<Texture> textures4;
+    textures4.push_back(Texture(texSky, "texture_diffuse"));
+
+    std::vector<Texture> texturesPenguin;
+    texturesPenguin.push_back(Texture(texPenguin, "texture_diffuse"));
+
+    std::vector<Texture> texturesTree;
+	texturesTree.push_back(Texture(texTree, "texture_diffuse"));
 
 	// Create Obj files - easier :)
 	// we can add here our textures :)
 	MeshLoaderObj loader;
 	Mesh sun = loader.loadObj("Resources/Models/sphere.obj");
-	Mesh box = loader.loadObj("Resources/Models/cube.obj", textures);
-	Mesh plane = loader.loadObj("Resources/Models/plane1.obj", textures3);
-	Mesh chicken = loader.loadObj("Resources/Models/Penguin.obj");
+	Mesh tree1 = loader.loadObj("Resources/Models/tree1.obj", texturesTree);
+	Mesh tree2 = loader.loadObj("Resources/Models/tree2.obj", texturesTree);
+	Mesh tree3 = loader.loadObj("Resources/Models/tree3.obj", texturesTree);
+	Mesh penguin = loader.loadObj("Resources/Models/Penguin.obj", texturesPenguin);
+	Mesh plane = loader.loadObj("Resources/Models/plane1.obj", textures2);
+	Mesh ocean = loader.loadObj("Resources/Models/plane1.obj", textures3);
+	Mesh box = loader.loadObj("Resources/Models/cube.obj", textures4);
+
+	// TODO: refactor mess... idk 1-2h
+	// Mesh loader::createMesh(objpath, texture-type from using above)
+
+	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// TODO: holding Z to deactivate this is stupid.. 
 
 	//check if we close the window or press the escape button
 	while (!window.isPressed(GLFW_KEY_ESCAPE) &&
 		glfwWindowShouldClose(window.getWindow()) == 0)
 	{
 		window.clear();
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+        double oldMousePosX = mousePosX, oldMousePosY = mousePosY;
+		
+        glfwGetCursorPos(pWindow, &mousePosX, &mousePosY);
+        mouseDeltaX = oldMousePosX - mousePosX;
+        mouseDeltaY = oldMousePosY - mousePosY;
+		// mouse camera handling
+
 		processKeyboardInput();
 
-		//test mouse input
-		if (window.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-		{
-			std::cout << "Pressing mouse button" << std::endl;
-		}
+		// TODO: refactor all this mess below... maybe
+		// should only have transforms here and maybe imgui
+		// poate de facut clasa uniformHandler(id) -> instanta skyHandler, oceanHandler, etc
+
 		 //// Code for the light ////
 
 		sunShader.use();
@@ -111,6 +136,7 @@ int main()
 		//Test for one Obj loading = light source
 
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
+		ModelMatrix = glm::rotate(ModelMatrix, sliderValue * 90, glm::vec3(1.0f, 0.0f, 0.0f));
 		ModelMatrix = glm::translate(ModelMatrix, lightPos);
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -119,33 +145,94 @@ int main()
 
 		//// End code for the light ////
 
-		shader.use();
+		///// skybox ////
 
-		///// Test Obj files for box ////
+		skyShader.use();
 
-		GLuint MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
-		GLuint ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
+        GLuint MatrixID2 = glGetUniformLocation(skyShader.getId(), "MVP");
+        GLuint ModelMatrixID = glGetUniformLocation(skyShader.getId(), "model");
 
 		ModelMatrix = glm::mat4(1.0);
-		ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+		ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-200.0f, -50.0f, -300.0f));
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(250.0f));
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
-		glUniform3f(glGetUniformLocation(shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+		glUniform3f(glGetUniformLocation(skyShader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform3f(glGetUniformLocation(skyShader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(glGetUniformLocation(skyShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		box.draw(shader);
+		box.draw(skyShader);
+
+        // trees draw
+
+		// TODO omg refactor these IDs - 1h
+        MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
+        ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
+
+        ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-85.0f, -5.0f, 90.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.25f));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+        glUniform3f(glGetUniformLocation(shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+		tree1.draw(shader);
+		// todo: disgusting.... 10min
+
+		ModelMatrix = glm::mat4(1.0);
+		ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-125.0f, -5.0f, -25.0f));
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.18f));
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		tree2.draw(shader);
+		// todo: disgusting....
+
+		ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(35.0f, -5.0f, 20.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.22f));
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		tree3.draw(shader);
+		// todo: disgusting....
+
+        // penguin obj drawing
+
+        shader.use();
+
+        MatrixID2 = glGetUniformLocation(shader.getId(), "MVP");
+        ModelMatrixID = glGetUniformLocation(shader.getId(), "model");
+
+        ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -55.0f, 400.0f));
+        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10.0f));
+        ModelMatrix = rotateAroundPoint(ModelMatrix, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), -100.0f, currentFrame);
+
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+        glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+        glUniform3f(glGetUniformLocation(shader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(glGetUniformLocation(shader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+        penguin.draw(shader);
 		
 		///// Test plane Obj file //////
 
 		mountainShader.use();
 
+        GLuint mountainMVPMatrixID = glGetUniformLocation(mountainShader.getId(), "MVP");
+		GLuint mountainModelMatrixID = glGetUniformLocation(mountainShader.getId(), "model");
+
 		ModelMatrix = glm::mat4(1.0);
 		ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -20.0f, 0.0f));
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.3f));
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-		glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(mountainMVPMatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(mountainModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 
 		plane.draw(mountainShader);
 
@@ -153,26 +240,71 @@ int main()
         glUniform3f(glGetUniformLocation(mountainShader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
         glUniform3f(glGetUniformLocation(mountainShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-        // chicken obj drawing
+		// ocean draw
 
-		shader.use();
+		oceanShader.use(); // TODO: shader.use() and then getIDing on same shader - refactor 1h
 
-		glUniform3f(glGetUniformLocation(shader.getId(), "lightColor"), 250, 250, 250);
-        for (int i = 0; i < 10; i++)
+        ModelMatrix = glm::mat4(1.0);
+        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -25.0f, 0.0f));
+		ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f));
+        MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+
+		ocean.draw(oceanShader); // refactor no oceanShader (or no oceanShader.use())
+
+        glUniform3f(glGetUniformLocation(oceanShader.getId(), "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+        glUniform3f(glGetUniformLocation(oceanShader.getId(), "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(glGetUniformLocation(oceanShader.getId(), "viewPos"), camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+		glUniform1f(glGetUniformLocation(oceanShader.getId(), "time"), currentFrame);
+
+        // imgui ---->
+
+		// deactivate mouse camera aiming if Z is held down
+		// for being able to interact with ImGui
+        if (window.isPressed(GLFW_KEY_Z))
         {
-            ModelMatrix = glm::mat4(1.0);
-            ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-250.0f + i * i * 10.0f, -0.0f, -4.0f + (i % 3) * (i % 2) * 20.0f));
-			ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10.0f));
-            MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-            glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP[0][0]);
-            glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-			chicken.draw(shader);
+            glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
+        else
+        {
+            glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+
+		if (toggleUI)
+		{
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+			{
+				ImGui::Text("Player Position: %.2fx, %.2fy, %.2fz", camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+				ImVec2 imSize(100, 20);
+				ImGui::SetNextWindowSize(imSize);
+				if (ImGui::Button("Hide Text"))
+				{
+					toggleUI = !toggleUI;
+				}
+
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				const char* label = "Sun Example";
+				const char* format = "%.2f";
+				ImGui::SliderFloat("Sun Modifier", &sliderValue, 0.0f, 1.0f, "%.2f", 1.0f);
+			}
+
+			ImGui::Render();
+
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
+
+        // <---- end imgui
 
 		window.update();
 	}
 }
 
+// todo: sprint if ever do fps camera 
+float speedRotate = 0.002f;
 void processKeyboardInput()
 {
 	float cameraSpeed = 30 * deltaTime;
@@ -186,18 +318,17 @@ void processKeyboardInput()
 		camera.keyboardMoveLeft(cameraSpeed);
 	if (window.isPressed(GLFW_KEY_D))
 		camera.keyboardMoveRight(cameraSpeed);
-	if (window.isPressed(GLFW_KEY_R))
-		camera.keyboardMoveUp(cameraSpeed);
-	if (window.isPressed(GLFW_KEY_F))
-		camera.keyboardMoveDown(cameraSpeed);
 
-	//rotation
-	if (window.isPressed(GLFW_KEY_LEFT))
-		camera.rotateOy(cameraSpeed);
-	if (window.isPressed(GLFW_KEY_RIGHT))
-		camera.rotateOy(-cameraSpeed);
-	if (window.isPressed(GLFW_KEY_UP))
-		camera.rotateOx(cameraSpeed);
-	if (window.isPressed(GLFW_KEY_DOWN))
-		camera.rotateOx(-cameraSpeed);
+	camera.rotateOy(mouseDeltaX * speedRotate);
+	camera.rotateOx(-mouseDeltaY * speedRotate * 2);
 }
+
+// todos not in main
+// 2. fix camera class
+// 3. fix shader folder -> glsls in shaders/glsl
+// 4. texture loading not just .bmp
+// 6. imgui move to dependencies
+// 7. keyboard input to inputclass
+// 8. includes in all files shouldn't be relative paths, ajust project settinsg
+
+// move all these todos to github issues...

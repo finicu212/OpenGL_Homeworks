@@ -14,9 +14,8 @@ uniform vec3 viewPos;
 void main()
 {
 	//Ambient light
-	float ambientStrength = 0.5;
+	float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * lightColor;
-//	vec3 objectColor = vec3(1.0f, 0.5f, 0.31f);
 
 	//vec3 result = ambient * objectColor;
 	//fragColor = vec4(result, 1.0f);
@@ -29,7 +28,7 @@ void main()
 	vec3 diffuse = diff * lightColor;
 
 	//Specular light
-	float specularStrength = 0.7;
+	float specularStrength = 0.9;
 	vec3 viewDir = normalize(viewPos - fragPos);
 	vec3 reflectDir = reflect(-lightDir, normal); 
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);

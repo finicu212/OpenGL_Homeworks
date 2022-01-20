@@ -15,16 +15,19 @@ void main()
 {
 	textureCoord = texCoord;
 
-	vec3 posCopy = pos;
+	// fragPos calculation - wave-like mountains
+	vec3 posCopy = pos * 2.5;
 
-	float amplitude = 2.5f;
-	float freq = 1.0f;
-	vec2 direction = vec2(0.75, 0.25);
+	float amplitude = 27.0f;
+	float freq = 0.025f;
+	vec2 direction = vec2(0.325, 0.675);
 
 	float dotProductResult = dot(direction, vec2(posCopy.x, posCopy.z));
-	posCopy.y += 2 * amplitude * pow( (sin(dotProductResult * freq) + 1) / 2, 2);
+	posCopy.y += 2 * amplitude * pow( (sin(dotProductResult * freq + 50) + 1) / 2, 2);
 
 	fragPos = vec3(model * vec4(posCopy, 1.0f));
+	// end fragPos calculation
+
 	norm = mat3(transpose(inverse(model)))*normals;
 	gl_Position = MVP * vec4(posCopy, 1.0f);
 }

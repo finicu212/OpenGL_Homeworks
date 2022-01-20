@@ -8,12 +8,14 @@
 
 class Camera
 {
-	private:
+	public:
+		void updateRotateVecs();
 		glm::vec3 cameraPosition;
 		glm::vec3 cameraViewDirection;
 		glm::vec3 cameraUp;
 		glm::vec3 cameraRight;
 
+		float pitch, yaw; // vars we use to rotate
 		//rotation - to be removed
 		float rotationOx;
 		float rotationOy;
@@ -28,14 +30,14 @@ class Camera
 		glm::vec3 getCameraViewDirection();
 		glm::vec3 getCameraUp();
 
+        void rotateOx(float angle);
+        void rotateOy(float angle);
+
 		void keyboardMoveFront(float cameraSpeed);
 		void keyboardMoveBack(float cameraSpeed);
 		void keyboardMoveLeft(float cameraSpeed);
 		void keyboardMoveRight(float cameraSpeed);
 		void keyboardMoveUp(float cameraSpeed);
 		void keyboardMoveDown(float cameraSpeed);
-
-		void rotateOx(float angle);
-		void rotateOy(float angle);
 };
 

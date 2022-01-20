@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include "..\Camera\camera.h"
 #include "..\Shaders\shader.h"
 
 struct Vertex 
@@ -62,6 +63,8 @@ struct Texture
 {
 	unsigned int id;
 	std::string type;
+
+	Texture(uint32_t id, const std::string& type) : id(id), type(type) {}
 };
 
 class Mesh
@@ -82,5 +85,28 @@ class Mesh
 		void setup();
 		void setup2();
 		void draw(Shader shader);
+
+        void handleCam(Camera& cam)
+        {
+            float vertexHeightAtPlayer;
+
+            Vertex closestVertex;
+            float closestDist = pow(2, 16);
+            for (Vertex v : vertices)
+            {
+                float xDist = cam.cameraPosition.x - v.pos.x;
+                float yDist = cam.cameraPosition.y - v.pos.y;
+                float dist = xDist + yDist;
+
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestVertex = v;
+                }
+            }
+
+
+            cam.cameraPosition.y = closestVertex.pos.y;
+        }
 };
 

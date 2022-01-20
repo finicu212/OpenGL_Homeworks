@@ -150,7 +150,7 @@ Mesh MeshLoaderObj::loadObj(const std::string &filename)
 
 	std::cout << "Loading:  " << filename << std::endl;
 
-	Mesh mesh(vertices, indices);
+	Mesh mesh = new Mesh(vertices, indices);
 
 	return mesh;
 }
@@ -158,9 +158,7 @@ Mesh MeshLoaderObj::loadObj(const std::string &filename)
 Mesh MeshLoaderObj::loadObj(const std::string &filename, std::vector<Texture> textures)
 {
 	Mesh mesh = loadObj(filename);
-	mesh.setTextures(textures);
+	mesh->setTextures(textures);
 
 	return mesh;
 }
-
-
