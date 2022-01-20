@@ -1,0 +1,11 @@
+﻿  camera.cpp
+D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\GameEngine\Camera\camera.cpp(92,38): warning C4305: '=': truncation from 'double' to 'float'
+D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\GameEngine\Camera\camera.cpp(95,39): warning C4305: '=': truncation from 'double' to 'float'
+  mesh.cpp
+  meshLoaderObj.cpp
+  main.cpp
+D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\GameEngine\main.cpp(110,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\GameEngine\main.cpp(322,30): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\GameEngine\main.cpp(323,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  GameEngine.vcxproj -> D:\D\!ACG\!BigHW\OpenGL_Homeworks\BIG_HW_RPG\Debug\GameEngine.exe
